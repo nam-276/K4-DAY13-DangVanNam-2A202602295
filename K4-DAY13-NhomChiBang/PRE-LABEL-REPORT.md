@@ -51,11 +51,19 @@ Phép z: `z_model = z_source - 0.075 - delta`, rồi JSON trả về `z_source =
 
 Quyết định lỗi batch: `case-batch-z` lệch cùng 1.805 m ở 13/13 hộp, class/x/y/yaw giữ nguyên, nên dừng sửa từng hộp và kiểm pipeline. `case-one-box-z` chỉ hộp 0 lệch, nên kiểm đối tượng đó, không kết luận cả batch hỏng.
 
-Chưa chắc: chưa có nhãn KITTI để nói B hay C đúng hơn. Side không đủ để chốt yaw. Ba thành viên còn lại chưa ghi nhận xét trên bản chạy này.
+Chưa chắc: chưa có nhãn KITTI để nói B hay C đúng hơn. Side không đủ để chốt yaw. Hoàng Văn Đạt và Nguyễn Việt Tiến chưa ghi nhận xét trên bản chạy này.
 
 ### Đặng Văn Nam — 2A202602295
 
-Chưa tự viết. Cần thêm vai trò đã làm, một quan sát có dẫn file, diễn giải phép z, một quyết định batch/từng hộp, và điều chưa chắc.
+Tôi đọc lại kết quả đã chạy trong thư mục nhóm và phụ trách phần đối chiếu A/B/C, đặc biệt là sự khác nhau giữa thay `delta` và đổi kích thước pillar. Tôi không phải người trực tiếp chạy Docker trên máy Mac; phần này dựa trên các file output đã lưu và `smoke.json` đã `passed`.
+
+Quan sát A/B: `run-A/summary.csv` ghi 1 hộp với mean_z 0.330, còn `run-B/summary.csv` ghi 13 hộp với mean_z 1.034. Hai ảnh `run-A/side-demo-delta-0-voxel-0.16.png` và `run-B/side-demo-delta-1.73-voxel-0.16.png` cũng khác rõ về số hộp, nên không thể hiểu việc đổi `delta` như dịch cùng một hộp lên/xuống một hằng số.
+
+Phép z tôi hiểu là script đưa điểm từ hệ nguồn sang hệ model bằng `z_model = z_source - z_ground - delta`, sau đó phải cộng ngược `z_ground + delta` khi xuất JSON. Với lượt B, lượng cộng ngược là `1.805` m. Nếu quên bước này thì hộp bị thấp hơn đúng lượng đó, thể hiện trong ca `case-batch-z`.
+
+Quyết định QC: với `case-batch-z`, 13/13 hộp đều lệch z cùng `1.805` m trong khi class, x, y, yaw giữ nguyên, nên phải dừng cả batch và kiểm pipeline/chuyển hệ tọa độ thay vì sửa tay từng hộp. Với `case-one-box-z`, chỉ hộp index 0 lệch nên cần kiểm riêng hộp đó bằng nhiều view, chưa đủ cơ sở kết luận toàn bộ batch sai.
+
+Chưa chắc: chưa có ground truth cho frame KITTI demo nên chưa thể nói B tốt hơn C chỉ vì B có nhiều hộp hơn. Ảnh Side chỉ là chiếu x-z, không đủ để kết luận yaw hay class cuối cùng khi đưa sang dữ liệu Robotaxi.
 
 ### Hoàng Văn Đạt — 2A202602267
 
